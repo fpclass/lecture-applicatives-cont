@@ -1,2 +1,3 @@
-# lecture17
-Code shown in the 17th lecture
+# Lecture: Fun with Applicative Functors
+
+Code shown in the CS141 lecture on Fun with Applicative Functors.
