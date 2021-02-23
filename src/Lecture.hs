@@ -1,43 +1,38 @@
 --------------------------------------------------------------------------------
 -- Functional Programming (CS141)                                             --
--- Lecture: Fun with Applicative Functors                                     --
+-- Lecture: Applicative Functors (cont.)                                      --
 --------------------------------------------------------------------------------
 
 {-# LANGUAGE DeriveFunctor #-}
 
 module Lecture where
 
+--------------------------------------------------------------------------------
+
+import Prelude hiding (Applicative(..))
+
 import System.Random
 
 --------------------------------------------------------------------------------
--- Writer type
 
--- the expression language and the instruction set for the stack-based machine
--- from one of the previous lectures
-data Expr = Val Int | Plus Expr Expr deriving Show 
-data Instr = PUSH Int | ADD deriving Show 
-type Program = [Instr]
+infixl 4 <*>
+class Functor f => Applicative f where
+    pure :: a -> f a
+    (<*>) :: f (a -> b) -> f a -> f b
 
-data Writer w a = MkWriter (a,w) deriving Show
+instance Applicative [] where
+    pure x = [x]
 
-instance Functor (Writer w) where
-    fmap f (MkWriter (x,o)) = MkWriter (f x, o)
+    fs <*> xs = [f x | f <- fs, x <- xs]
 
-writeLog :: String -> Writer [String] ()
-writeLog msg = MkWriter ((), [msg])
+listEx0 :: (a -> b) -> (a -> b) -> a -> a -> a -> [b]
+listEx0 f g x y z = [f,g] <*> [x,y,z]
 
-instance Monoid w => Applicative (Writer w) where
-    pure x = MkWriter (x, mempty)
+listEx1 :: (a -> b -> c) -> a -> a -> b -> b -> b -> [c]
+listEx1 g x y a b c = g <$> [x,y] <*> [a,b,c]
 
-    MkWriter (f,o1) <*> MkWriter (x,o2) = MkWriter (f x, o1 <> o2)
-
-comp :: Expr -> Writer [String] Program
-comp (Val n)    = writeLog "compiling a value" *> pure [PUSH n]
-comp (Plus l r) = writeLog "compiling a plus" *>
-    ((\p p' -> p ++ p' ++ [ADD]) <$> comp l <*> comp r)
-
-compEx :: Writer [String] Program
-compEx = comp (Plus (Val 4) (Val 8))
+listEx2 :: Num a => a -> a -> a -> a -> a -> [a]
+listEx2 u v a b c = (((\x y z -> x+y+z) <$> [u,v]) <*> [a,b,c]) <*> [1,2]
 
 --------------------------------------------------------------------------------
 
